@@ -1,0 +1,108 @@
+normalise << _proc @normalise(p_face)
+
+        _local bounds << p_face.boundary.bounds
+        _local c1 << p_face.centre_point.coord
+
+        t1 << transform.new().translate(-c1.x, -c1.y)
+
+        _local g1 << p_face.gravity_point.coord
+
+
+        g2 << g1.transformed(t1)
+        g3 << g2
+        t2 << t1
+
+        _for j _over 1.upto(3)
+        _loop
+                _if g3.x < 1 _andif g3.y < 1
+                _then
+                        _leave
+                _endif
+                g3 << g2.transformed(transform.new().rotate(j * float.pi/2))
+                t2 << t2.rotate(j * float.pi/2)
+        _endloop
+
+        b1 << bounds.transformed(t2)
+
+        t3 << t2.translate(-b1.bounds.bottom_left.x, -b1.bounds.bottom_left.y)
+
+        >> t3
+_endproc
+$
+
+dump << _proc@dump(out, _optional size)1
+        _local faces << rwo_set.new()
+        _local j<<0
+        setvars()
+        size << size.default(float.infinity)
+        
+        _for i _over v.collections[:mit_conduit].fast_elements()
+        _loop
+                _if (j+<<1) > size
+                _then
+                        _leave
+                _endif
+                _try
+                        faces.add_all(i.conduit_route_faces())
+                _when error
+                        write("skipping:", i)
+                _endtry
+        _endloop
+        write(faces.size)
+        _local out_faces << rope.new()
+        my_coord << _proc(c)>>write_string(c.x.rounded,",",c.y.rounded);_endproc
+        _for i_face _over faces.fast_elements()
+        _loop
+                t1 << normalise(i_face)
+               
+                out_face << equality_hash_table.new()
+                _for i_geom _over i_face.world.geometry_set(i_face.boundary.bounds).fast_elements()
+                _loop
+                        _if  {:mit_conduit_route_face, :mit_conduit_section}.includes?(i_geom.rwo_type)
+                        _then 
+                                _if i_geom.geom_type <> :text
+                                _then
+                                        diam << _if i_geom.rwo_type = :mit_conduit_section
+                                                _then
+                                                        >> i_geom.rwo.mit_conduit.get_spec_record().inner_diameter
+                                                _else
+                                                        >> 0
+                                                _endif
+
+                                        diam << (diam * 10).rounded
+
+                                        _if i_geom.app_type = :boundary _andif
+                                            i_geom.rwo = i_face
+                                        _then
+                                                bounds << i_geom.boundary.
+                                                          transformed(t1).
+                                                          bounds
+                                                c1 << bounds.bottom_left
+                                                c2 << bounds.top_right
+                                                out_face["boundary"] <<
+                                                        equality_property_list.new_with(
+                                                                "x1", c1.x,
+                                                                "y1", c1.y,
+                                                                "x2", c2.x,
+                                                                "y2", c2.y)
+                                        _elif i_geom.app_type = :cross_section
+                                        _then
+                                                c1 << i_geom.bounds.centre.coord.transformed(t1)
+                                                out_face["conduit"] << equality_property_list.new_with(
+                                                                               "x1", c1.x,
+                                                                               "y1", c1.y,
+                                                                               "diameter", diam.value)
+                                        _else
+ #                                               write("other,", i_geom.rwo_type, " ", i_geom.app_type)
+                                        _endif
+                                _endif
+                        _endif
+                        
+                _endloop
+                _if out_face.empty?.not
+                _then
+                        out_faces.add(out_face)
+                _endif
+        _endloop
+        json_encoder.new().generate_file(out_faces, out)
+        _endproc
