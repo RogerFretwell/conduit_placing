@@ -81,17 +81,18 @@ dump << _proc@dump(out, _optional size)1
                                                 c2 << bounds.top_right
                                                 out_face["boundary"] <<
                                                         equality_property_list.new_with(
-                                                                "x1", c1.x,
-                                                                "y1", c1.y,
-                                                                "x2", c2.x,
-                                                                "y2", c2.y)
+                                                                "x1", c1.x.floor,
+                                                                "y1", c1.y.floor,
+                                                                "x2", c2.x.floor,
+                                                                "y2", c2.y.floor)
                                         _elif i_geom.app_type = :cross_section
                                         _then
                                                 c1 << i_geom.bounds.centre.coord.transformed(t1)
-                                                out_face["conduit"] << equality_property_list.new_with(
-                                                                               "x1", c1.x,
-                                                                               "y1", c1.y,
-                                                                               "diameter", diam.value)
+                                                out_face.at_or_new_if_absent("conduits", rope).
+                                                        add(equality_property_list.new_with(
+                                                                               "x1", c1.x.floor,
+                                                                               "y1", c1.y.floor,
+                                                                               "diameter", diam.value))
                                         _else
  #                                               write("other,", i_geom.rwo_type, " ", i_geom.app_type)
                                         _endif
