@@ -86,7 +86,8 @@ dump << _proc@dump(out, _optional size)1
                                                                 "x2", c2.x.floor,
                                                                 "y2", c2.y.floor,
                                                                 "face", i_face.id)
-                                        _elif i_geom.app_type = :cross_section
+                                        _elif i_geom.app_type = :cross_section _andif
+                                              i_geom.rwo.container_conduit_section _is _unset
                                         _then
                                                 c1 << i_geom.bounds.centre.coord.transformed(t1)
                                                 out_face.at_or_new_if_absent("conduits", rope).
