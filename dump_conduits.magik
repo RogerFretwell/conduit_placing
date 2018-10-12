@@ -84,7 +84,8 @@ dump << _proc@dump(out, _optional size)1
                                                                 "x1", c1.x.floor,
                                                                 "y1", c1.y.floor,
                                                                 "x2", c2.x.floor,
-                                                                "y2", c2.y.floor)
+                                                                "y2", c2.y.floor,
+                                                                "face", i_face.id)
                                         _elif i_geom.app_type = :cross_section
                                         _then
                                                 c1 << i_geom.bounds.centre.coord.transformed(t1)
