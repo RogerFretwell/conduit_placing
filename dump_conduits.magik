@@ -8,25 +8,32 @@ normalise << _proc @normalise(p_face)
         _local g1 << p_face.gravity_point.coord
 
 
-        g2 << g1.transformed(t1)
-        g3 << g2
+
         t2 << t1
 
-        _for j _over 1.upto(3)
+        _for j _over 1.upto(4)
         _loop
-                _if g3.x < 1 _andif g3.y < 1
+                g2 << g1.transformed(t2)
+                _if p_face.id = 328100
                 _then
+                        write("a1:",j, " ", g2.x, " ", g2.y, " ", g2)
+                _endif
+                _if g2.x.rounded = 0 _andif g2.y.rounded < 1
+                _then
+                        _if p_face.id = 328100
+                        _then
+                                write("a2:",g2.x.rounded, " ", g2.y.rounded)
+                        _endif
                         _leave
                 _endif
-                g3 << g2.transformed(transform.new().rotate(j * float.pi/2))
-                t2 << t2.rotate(j * float.pi/2)
+                
+                t2 << t1.rotate(j * float.pi/2)
         _endloop
 
+        
         b1 << bounds.transformed(t2)
 
-        t3 << t2.translate(-b1.bounds.bottom_left.x, -b1.bounds.bottom_left.y)
-
-        >> t3
+        >> t2.translate(-b1.bounds.bottom_left.x, -b1.bounds.bottom_left.y)
 _endproc
 $
 
